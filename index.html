@@ -17,6 +17,9 @@
     --overlap-soft:#fde8c0;
     --region:#cfd6de;       /* one region only — muted */
     --weekend:#f0f2f5;
+    /* VELO club-closed days */
+    --velovrij:#0d9488;     /* teal */
+    --velovrij-soft:#d3f0eb;
   }
   *{box-sizing:border-box}
   html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -49,10 +52,15 @@
   body.off-reg td.reg .daynum{color:var(--ink)}
   body.off-reg td.reg.weekend .daynum{color:#8b95a3}
   body.off-reg td.reg .rtag{display:none}
+  body.off-velovrij td.velo::after,body.off-velovrij td.velo-only::after{display:none}
+  body.off-velovrij td.velo-only{background:transparent}
+  body.off-velovrij td.velo-only.weekend{background:var(--weekend)}
+  body.off-velovrij td.velo-only.ovl{background:var(--overlap-soft)}
   .dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto}
   .swatch{width:16px;height:11px;border-radius:3px;display:inline-block;flex:0 0 auto}
   .swatch.ovl{background:var(--overlap)}
   .swatch.reg{background:repeating-linear-gradient(45deg,var(--region),var(--region) 3px,#e7ebf0 3px,#e7ebf0 6px)}
+  .swatch.velo{background:var(--velovrij-soft);border-bottom:3px solid var(--velovrij)}
 
   .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
   .month{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 10px 12px;
@@ -78,9 +86,13 @@
   /* holiday top bar to make ranges read as bands */
   td.ovl::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--overlap);border-radius:5px 5px 0 0;z-index:1}
   td.reg::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--region);border-radius:5px 5px 0 0;z-index:1}
+  /* VELO club-closed days: light tint (when not a school holiday) + teal bottom bar */
+  td.velo-only{background:var(--velovrij-soft)}
+  td.velo::after,td.velo-only::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--velovrij);border-radius:0 0 5px 5px;z-index:1}
   /* activity marker dots */
-  .marks{position:absolute;left:0;right:0;bottom:2px;display:flex;gap:2px;justify-content:center;z-index:2}
+  .marks{position:absolute;left:0;right:0;bottom:4px;display:flex;gap:2px;justify-content:center;z-index:2}
   .marks .dot{width:6px;height:6px}
+  td[data-tip]{cursor:pointer}
   td.hasact{cursor:pointer}
   td.hasact .daynum{font-weight:700}
   td .rtag{position:absolute;top:1px;right:2px;font-size:7px;font-weight:800;color:#9aa4b1;z-index:2;letter-spacing:-.3px}
@@ -117,9 +129,12 @@
   .row .loc{color:var(--muted);font-size:12px;text-align:right;white-space:nowrap}
   .row.vak{background:var(--overlap-soft)}
   .row.vak .date{color:#9a6a00}
+  .row.velovrij{background:var(--velovrij-soft)}
+  .row.velovrij .date{color:#0a6b60}
   .pill{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;color:#fff;letter-spacing:.3px}
   .p-wtsdn{background:var(--wtsdn)}.p-velo{background:var(--velo)}.p-extern{background:var(--extern)}
   .p-feest{background:var(--feest)}.p-vak{background:var(--overlap);color:#5c3d00}
+  .p-velovrij{background:var(--velovrij)}
 
   footer{margin-top:26px;color:var(--muted);font-size:11.5px;text-align:center;line-height:1.6}
   .note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--overlap);border-radius:8px;
@@ -146,7 +161,7 @@
   <header class="top">
     <div>
       <h1>WTSDN&nbsp;/&nbsp;VELO — Jaaragenda <span class="yr">2027</span></h1>
-      <div class="sub">Trainingen, examens &amp; toernooien · met schoolvakanties regio <b>Midden</b> &amp; <b>Zuid</b> · <em>concept</em></div>
+      <div class="sub">Trainingen, examens &amp; toernooien · schoolvakanties regio <b>Midden</b> &amp; <b>Zuid</b> · VELO-vrije dagen · <em>concept</em></div>
     </div>
   </header>
 
@@ -155,11 +170,11 @@
     <span class="lg" data-toggle="wtsdn"><span class="dot" style="background:var(--wtsdn)"></span> WTSDN</span>
     <span class="lg" data-toggle="velo"><span class="dot" style="background:var(--velo)"></span> VELO</span>
     <span class="lg" data-toggle="extern"><span class="dot" style="background:var(--extern)"></span> Extern event</span>
-    <span class="lg" data-toggle="feest"><span class="dot" style="background:var(--feest)"></span> Feestdag (Pasen)</span>
     <span style="width:1px;height:16px;background:var(--line)"></span>
-    <span class="lg"><b>Vakantie</b></span>
-    <span class="lg" data-toggle="ovl"><span class="swatch ovl"></span> Midden &amp; Zuid vrij <em style="color:var(--muted)">(overlap)</em></span>
-    <span class="lg" data-toggle="reg"><span class="swatch reg"></span> Alleen Midden <b>(M)</b> of Zuid <b>(Z)</b></span>
+    <span class="lg"><b>Vrij</b></span>
+    <span class="lg" data-toggle="velovrij"><span class="swatch velo"></span> VELO vrij <em style="color:var(--muted)">(geen training)</em></span>
+    <span class="lg" data-toggle="ovl"><span class="swatch ovl"></span> School: Midden &amp; Zuid <em style="color:var(--muted)">(overlap)</em></span>
+    <span class="lg" data-toggle="reg"><span class="swatch reg"></span> School: alleen Midden <b>(M)</b> of Zuid <b>(Z)</b></span>
     <span class="khint">↑ klik om aan/uit te zetten</span>
   </div>
 
@@ -169,7 +184,7 @@
 
   <section class="agenda">
     <h2>Agenda in detail</h2>
-    <div class="hint">Alle activiteiten en vakanties op een rij. Vakantieregels: waar Midden en Zuid verschillen, staan beide periodes vermeld.</div>
+    <div class="hint">Alle activiteiten, VELO-vrije dagen en schoolvakanties op een rij. Waar Midden en Zuid verschillen, staan beide periodes vermeld.</div>
     <div id="list"></div>
   </section>
 
@@ -221,11 +236,22 @@ const VAK=[
  {name:"Herfstvakantie",    midden:[[2027,10,16],[2027,10,24]],zuid:[[2027,10,23],[2027,10,31]]},
  {name:"Kerstvakantie",     midden:[[2027,12,25],[2028,1,9]], zuid:[[2027,12,25],[2028,1,9]]},
 ];
-// Public-holiday period from the source agenda (shown as feestdag marker range)
-const FEEST=[ {name:"Pasen", r:[[2027,3,26],[2027,3,29]]} ];
+const FEEST=[]; // feestdagen zijn opgenomen in de VELO-vrije periodes hieronder
+
+// ---- VELO club-closed periods (geen training). r:[start,end] inclusive. ----
+// Alleen periodes die (deels) in 2027 vallen worden getoond in het raster.
+const VELO=[
+ {name:"Kerstvakantie", r:[[2026,12,20],[2027,1,2]]},
+ {name:"Voorjaarsvakantie", r:[[2027,2,21],[2027,2,27]]},
+ {name:"Paasweekend", r:[[2027,3,26],[2027,3,29]], note:"Goede Vrijdag t/m 2e Paasdag"},
+ {name:"Meivakantie", r:[[2027,4,26],[2027,5,8]], note:"incl. Koningsdag 27/4, Bevrijdingsdag 5/5, Hemelvaartsdag 6/5"},
+ {name:"Pinksteren", r:[[2027,5,16],[2027,5,17]], note:"1e & 2e Pinksterdag"},
+ {name:"Zomervakantie", r:[[2027,7,11],[2027,8,28]]},
+];
 
 const key=(y,m,d)=>y*10000+m*100+d;
 function inRange(k,r){return k>=key(...r[0]) && k<=key(...r[1]);}
+function veloStatus(y,m,d){const k=key(y,m,d);for(const v of VELO){if(inRange(k,v.r))return v;}return null;}
 
 // Precompute per-day holiday status for 2027
 function holidayStatus(y,m,d){
@@ -283,21 +309,21 @@ for(let m=1;m<=12;m++){
     const dow=(new Date(2027,m-1,d).getDay()+6)%7;
     const wknd=dow>=5;
     const hol=holidayStatus(2027,m,d);
-    const feest=feestStatus(2027,m,d);
+    const velo=veloStatus(2027,m,d);
     const acts=actByDay[key(2027,m,d)]||[];
     let tag="";
     let classes=[];
     if(wknd) classes.push("weekend");
     if(hol){classes.push(hol.cls); tag=hol.tag;}
+    if(velo) classes.push(hol? "velo":"velo-only");
     if(acts.length) classes.push("hasact");
-    // marker dots (dedupe by soort, plus feest)
+    // marker dots (dedupe by soort)
     let soorten=[...new Set(acts.map(a=>a.soort))];
-    if(feest && !soorten.includes("feest")) soorten.push("feest");
     let dots = soorten.map(s=>`<span class="dot d-${s}" style="background:${soortColor[s]}"></span>`).join("");
     // tooltip payload
     let tipItems=acts.map(a=>`${a.t}${a.tijd?" · "+a.tijd:""}${a.loc?" · "+a.loc:""}`);
-    if(hol) tipItems.unshift(`🏖 ${hol.name} (${hol.scope})`);
-    if(feest) tipItems.unshift(`✝ ${feest}`);
+    if(hol) tipItems.unshift(`🏫 School vrij: ${hol.name} (${hol.scope})`);
+    if(velo) tipItems.unshift(`🥋 VELO vrij — ${velo.name}${velo.note? " ("+velo.note+")":""}`);
     const tipData = tipItems.length? ` data-tip="${tipItems.join(' ||| ').replace(/"/g,'&quot;')}" data-date="${d} ${MONTHS[m-1]}"`:"";
     html+=`<td class="${classes.join(' ')}"${tipData}>`
         +(tag?`<span class="rtag">${tag}</span>`:"")
@@ -314,9 +340,10 @@ for(let m=1;m<=12;m++){
 
 // overlap note
 document.getElementById("ovlnote").innerHTML=
- "<b>Tip voor de planning:</b> de gemarkeerde <span style='color:#9a6a00;font-weight:700'>oranje</span> periodes zijn de weken dat "+
- "<b>zowel Midden als Zuid</b> vrij zijn — het handigst voor toernooien, clinics en clubactiviteiten. "+
- "Gestreepte dagen met <b>M</b> of <b>Z</b> zijn alleen in die regio vakantie.";
+ "<b>Zo lees je het:</b> een <span style='color:#0a6b60;font-weight:700'>groen balkje onderaan</span> een dag betekent dat "+
+ "<b>VELO gesloten</b> is (geen training). De bovenrand toont de schoolvakanties: <span style='color:#9a6a00;font-weight:700'>oranje</span> = "+
+ "<b>Midden én Zuid</b> vrij (overlap), gestreept met <b>M</b>/<b>Z</b> = alleen die regio. "+
+ "Een dag kan beide hebben. Tik of hover op een dag voor de details.";
 
 // ---- Clickable legend (toggle categories on/off) ----
 document.querySelectorAll('.lg[data-toggle]').forEach(el=>{
@@ -372,7 +399,9 @@ window.addEventListener("resize",hideTip);
 
 // ---- Agenda list (grouped by month, merging activities + holidays chronologically) ----
 function fmtRange(r){
-  const [a,b]=r; const sa=`${a[2]} ${MONTHS[a[1]-1]}`, sb=`${b[2]} ${MONTHS[b[1]-1]}${b[0]!==2027?" "+b[0]:""}`;
+  const [a,b]=r;
+  const sa=`${a[2]} ${MONTHS[a[1]-1]}${a[0]!==2027?" "+a[0]:""}`;
+  const sb=`${b[2]} ${MONTHS[b[1]-1]}${b[0]!==2027?" "+b[0]:""}`;
   return `${sa} t/m ${sb}`;
 }
 const dayName=(y,m,d)=>["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"][new Date(y,m-1,d).getDay()];
@@ -389,6 +418,10 @@ for(const v of VAK){
   entries.push({sort:key(...earliest), day:earliest, kind:"vak", v});
 }
 for(const f of FEEST){ entries.push({sort:key(...f.r[0]), day:f.r[0], kind:"feest", f}); }
+for(const v of VELO){
+  const anchor = v.r[0][0]<2027 ? [2027,1,1] : v.r[0]; // periodes die in 2026 starten tonen we bij januari 2027
+  entries.push({sort:key(...anchor), day:anchor, kind:"velovrij", v});
+}
 entries.sort((x,y)=>x.sort-y.sort);
 
 const list=document.getElementById("list");
@@ -415,10 +448,17 @@ for(const e of entries){
      `<div class="row vak"><div class="date">🏖<small>vakantie</small></div>`+
      `<div class="title">${v.name} <span class="pill p-vak">${same?'Midden & Zuid gelijk':'M ≠ Z'}</span></div>`+
      detail+`</div>`);
-  } else {
-    const f=e.f;
+  } else if(e.kind==="velovrij"){
+    const v=e.v;
     grp.insertAdjacentHTML("beforeend",
-     `<div class="row"><div class="date">${f.r[0][2]}–${f.r[1][2]} ${MONTHS[f.r[0][1]-1].slice(0,3)}<small>feestdag</small></div>`+
+     `<div class="row velovrij"><div class="date">🥋<small>VELO vrij</small></div>`+
+     `<div class="title">${v.name} <span class="pill p-velovrij">Geen training</span></div>`+
+     `<div class="loc">${fmtRange(v.r)}${v.note? '<br><span style="font-size:11px;color:#0a6b60">'+v.note+'</span>':''}</div></div>`);
+  } else {
+    const f=e.f; const one=key(...f.r[0])===key(...f.r[1]);
+    const dstr = one? `${f.r[0][2]} ${MONTHS[f.r[0][1]-1].slice(0,3)}` : `${f.r[0][2]}–${f.r[1][2]} ${MONTHS[f.r[0][1]-1].slice(0,3)}`;
+    grp.insertAdjacentHTML("beforeend",
+     `<div class="row"><div class="date">${dstr}<small>feestdag</small></div>`+
      `<div class="title"><span class="dot" style="background:var(--feest)"></span>${f.name}`+
      ` <span class="pill p-feest">Feestdag</span></div><div class="loc"></div></div>`);
   }
