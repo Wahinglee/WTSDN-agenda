@@ -27,8 +27,9 @@
   h1{font-size:26px;margin:0;letter-spacing:.2px}
   h1 .yr{color:var(--overlap);font-weight:800}
   .sub{color:var(--muted);font-size:13.5px;margin-top:2px}
-  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:16px 0 22px;padding:14px 16px;background:var(--card);
-          border:1px solid var(--line);border-radius:12px;font-size:12.5px}
+  .legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:16px 0 22px;padding:12px 16px;background:var(--card);
+          border:1px solid var(--line);border-radius:12px;font-size:12.5px;
+          position:sticky;top:8px;z-index:50;box-shadow:0 4px 14px rgba(20,30,50,.08)}
   .legend b{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-right:4px}
   .lg{display:inline-flex;align-items:center;gap:6px}
   .lg[data-toggle]{cursor:pointer;user-select:none;padding:3px 7px;border-radius:7px;transition:background .12s,opacity .12s}
@@ -60,6 +61,10 @@
   .month h2 span{color:var(--muted);font-weight:500;font-size:11px}
   table{width:100%;border-collapse:collapse;table-layout:fixed}
   th{font-size:9.5px;color:var(--muted);font-weight:600;padding:2px 0;text-transform:uppercase}
+  th.wk,td.wk{width:19px;font-size:8.5px;color:#aab2be;font-weight:700;background:#fafbfc;
+              border-right:1px solid var(--line);text-align:center;vertical-align:middle}
+  th.wk{font-size:7.5px;letter-spacing:0}
+  td.wk{border-radius:0}
   td{height:30px;text-align:center;vertical-align:top;position:relative;border-radius:5px}
   .daynum{font-size:11px;line-height:1;padding-top:3px;position:relative;z-index:2}
   td.pad{background:transparent}
@@ -250,19 +255,31 @@ for(const a of ACT){
 }
 const soortColor={wtsdn:"var(--wtsdn)",velo:"var(--velo)",extern:"var(--extern)",feest:"var(--feest)"};
 
+// ISO week number (weeks start Monday; week 1 contains the first Thursday)
+function isoWeek(y,mo,da){
+  const t=new Date(Date.UTC(y,mo,da));
+  const day=(t.getUTCDay()+6)%7;
+  t.setUTCDate(t.getUTCDate()-day+3);
+  const firstThu=new Date(Date.UTC(t.getUTCFullYear(),0,4));
+  const fday=(firstThu.getUTCDay()+6)%7;
+  firstThu.setUTCDate(firstThu.getUTCDate()-fday+3);
+  return 1+Math.round((t-firstThu)/6048e5);
+}
+
 // ---- Render 12-month grid ----
 const grid=document.getElementById("grid");
 for(let m=1;m<=12;m++){
   const mc=document.createElement("div");mc.className="month";
   const days=new Date(2027,m,0).getDate();
   const first=(new Date(2027,m-1,1).getDay()+6)%7; // Mon=0
-  let html=`<h2>${MONTHS[m-1].charAt(0).toUpperCase()+MONTHS[m-1].slice(1)} <span>2027</span></h2><table><thead><tr>`;
+  const rowMon=new Date(2027,m-1,1-first); // Monday of the first displayed row
+  let html=`<h2>${MONTHS[m-1].charAt(0).toUpperCase()+MONTHS[m-1].slice(1)} <span>2027</span></h2><table><thead><tr><th class="wk">wk</th>`;
   for(const w of WD) html+=`<th>${w}</th>`;
-  html+="</tr></thead><tbody><tr>";
+  html+=`</tr></thead><tbody><tr><td class="wk">${isoWeek(rowMon.getFullYear(),rowMon.getMonth(),rowMon.getDate())}</td>`;
   let col=0;
   for(let i=0;i<first;i++){html+="<td class='pad'></td>";col++;}
   for(let d=1;d<=days;d++){
-    if(col===7){html+="</tr><tr>";col=0;}
+    if(col===7){rowMon.setDate(rowMon.getDate()+7);html+=`</tr><tr><td class="wk">${isoWeek(rowMon.getFullYear(),rowMon.getMonth(),rowMon.getDate())}</td>`;col=0;}
     const dow=(new Date(2027,m-1,d).getDay()+6)%7;
     const wknd=dow>=5;
     const hol=holidayStatus(2027,m,d);
