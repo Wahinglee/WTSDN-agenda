@@ -81,10 +81,19 @@
   td .rtag{position:absolute;top:1px;right:2px;font-size:7px;font-weight:800;color:#9aa4b1;z-index:2;letter-spacing:-.3px}
 
   /* tooltip */
-  .tip{position:fixed;z-index:99;background:#1c2430;color:#fff;padding:8px 10px;border-radius:8px;font-size:12px;
-       max-width:250px;box-shadow:0 6px 24px rgba(0,0,0,.25);pointer-events:none;opacity:0;transition:opacity .12s;line-height:1.35}
-  .tip b{display:block;margin-bottom:2px}
+  .tip{position:fixed;z-index:99;background:#1c2430;color:#fff;padding:9px 12px;border-radius:9px;font-size:12px;
+       max-width:250px;box-shadow:0 6px 24px rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .12s;line-height:1.35}
+  .tip b{display:block;margin-bottom:3px;padding-right:16px}
   .tip .meta{color:#c7cfda;font-size:11px}
+  .tclose{display:none;position:absolute;top:5px;right:8px;background:transparent;border:none;color:#c7cfda;
+          font-size:19px;line-height:1;cursor:pointer;padding:2px 4px}
+  .tip.pinned .tclose{display:block}
+  /* mobile: show as a bottom sheet that never falls off-screen */
+  .tip.sheet{left:0!important;right:0;top:auto!important;bottom:0;max-width:100%;
+             border-radius:16px 16px 0 0;padding:16px 18px 22px;font-size:14.5px;box-shadow:0 -6px 28px rgba(0,0,0,.3)}
+  .tip.sheet b{font-size:15.5px;margin-bottom:6px}
+  .tip.sheet .meta{font-size:13.5px;padding:2px 0}
+  .tip.sheet .tclose{display:block;top:12px;right:14px;font-size:24px}
 
   /* agenda list */
   .agenda{margin-top:34px}
@@ -301,22 +310,48 @@ document.querySelectorAll('.lg[data-toggle]').forEach(el=>{
   });
 });
 
-// ---- Tooltip ----
+// ---- Tooltip / info box (works with mouse hover on desktop and tap on mobile) ----
 const tip=document.getElementById("tip");
+const isMobile=()=>window.matchMedia("(max-width:560px)").matches;
+let pinned=false;
+
+function fillTip(td){
+  const items=td.getAttribute("data-tip").split(" ||| ");
+  tip.innerHTML=`<button class="tclose" aria-label="Sluiten">×</button>`
+    +`<b>${td.getAttribute("data-date")}</b>`
+    +items.map(i=>`<div class="meta">${i}</div>`).join("");
+  tip.querySelector(".tclose").addEventListener("click",e=>{e.stopPropagation();hideTip();});
+}
+function clampPos(x,y){
+  const r=tip.getBoundingClientRect(), pad=8;
+  let nx=x+14, ny=y+14;
+  if(nx+r.width>window.innerWidth-pad) nx=x-r.width-14;
+  if(nx<pad) nx=pad;
+  if(nx+r.width>window.innerWidth-pad) nx=window.innerWidth-r.width-pad;
+  if(ny+r.height>window.innerHeight-pad) ny=y-r.height-14;
+  if(ny<pad) ny=pad;
+  tip.style.left=nx+"px"; tip.style.top=ny+"px";
+}
+function showTip(td,x,y,pin){
+  fillTip(td);
+  tip.classList.toggle("pinned",!!pin);
+  tip.style.opacity="1";
+  tip.style.pointerEvents=pin?"auto":"none";
+  if(isMobile()){ tip.classList.add("sheet"); tip.style.left=""; tip.style.top=""; }
+  else { tip.classList.remove("sheet"); clampPos(x,y); }
+}
+function hideTip(){ tip.style.opacity="0"; tip.style.pointerEvents="none"; tip.classList.remove("pinned","sheet"); pinned=false; }
+
 document.querySelectorAll("td[data-tip]").forEach(td=>{
-  td.addEventListener("mouseenter",e=>{
-    const items=td.getAttribute("data-tip").split(" ||| ");
-    tip.innerHTML=`<b>${td.getAttribute("data-date")}</b>`+items.map(i=>`<div class="meta">${i}</div>`).join("");
-    tip.style.opacity="1";
-  });
-  td.addEventListener("mousemove",e=>{
-    let x=e.clientX+14,y=e.clientY+14;
-    if(x+260>window.innerWidth)x=e.clientX-260;
-    if(y+120>window.innerHeight)y=e.clientY-120;
-    tip.style.left=x+"px";tip.style.top=y+"px";
-  });
-  td.addEventListener("mouseleave",()=>tip.style.opacity="0");
+  td.addEventListener("mouseenter",()=>{ if(pinned||isMobile())return; const r=td.getBoundingClientRect(); showTip(td,r.left,r.top,false); });
+  td.addEventListener("mousemove",e=>{ if(pinned||isMobile())return; clampPos(e.clientX,e.clientY); });
+  td.addEventListener("mouseleave",()=>{ if(!pinned) hideTip(); });
+  // tap (mobile) or click (desktop) pins the box so it stays open
+  td.addEventListener("click",e=>{ e.stopPropagation(); pinned=true; const r=td.getBoundingClientRect(); showTip(td,r.left,r.bottom,true); });
 });
+// tap/click anywhere else closes a pinned box
+document.addEventListener("click",()=>{ if(pinned) hideTip(); });
+window.addEventListener("resize",hideTip);
 
 // ---- Agenda list (grouped by month, merging activities + holidays chronologically) ----
 function fmtRange(r){
