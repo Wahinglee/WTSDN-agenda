@@ -1,4 +1,13 @@
 <!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Wtsdn Velo Jaaragenda 2027",
+  "schemaVersion": 1,
+  "description": "Interactieve jaarplanner WTSDN/VELO 2027: alle trainingen, examens en toernooien in een 12-maanden raster, gecombineerd met de schoolvakanties van regio Midden en Zuid. Overlap-periodes (beide regio's vrij) zijn oranje benadrukt; alleen-Midden/alleen-Zuid dagen zijn gestreept met M/Z. De legenda is klikbaar om categorieën aan/uit te zetten. Onderaan een gedetailleerde agenda met tijden en locaties.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -140,6 +149,83 @@
   .note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--overlap);border-radius:8px;
         padding:10px 14px;font-size:12.5px;color:#41506a;margin:18px 0 0}
 
+  /* ---- editor toolbar ---- */
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 18px}
+  .btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:600;
+       padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+       cursor:pointer;transition:background .12s,border-color .12s,box-shadow .12s;box-shadow:0 1px 2px rgba(20,30,50,.04)}
+  .btn:hover{background:#f0f3f7}
+  .btn.primary{background:var(--wtsdn);border-color:var(--wtsdn);color:#fff}
+  .btn.primary:hover{background:#1d4f88}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--muted);box-shadow:none}
+  .btn.ghost:hover{background:#eef1f4;color:var(--ink)}
+  .btn.danger{color:#b91c1c;border-color:#f0c9c9;background:#fff}
+  .btn.danger:hover{background:#fbeaea}
+  .toolbar .sp{flex:1}
+  .toolbar .saved{font-size:11.5px;color:var(--muted)}
+  .dropdown{position:relative}
+  .menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);
+        border-radius:11px;box-shadow:0 10px 30px rgba(20,30,50,.18);padding:6px;min-width:236px;z-index:80;display:none}
+  .dropdown.open .menu{display:block}
+  .menu button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;text-align:left;
+        background:transparent;border:none;font:inherit;padding:9px 11px;border-radius:8px;cursor:pointer;color:var(--ink)}
+  .menu button:hover{background:#eef2f7}
+  .menu button small{color:var(--muted);font-size:11px;font-weight:400}
+  .menu .sep{height:1px;background:var(--line);margin:5px 4px}
+
+  /* ---- interactive day panel ---- */
+  .panel{position:fixed;z-index:95;background:var(--card);color:var(--ink);border:1px solid var(--line);
+         border-radius:13px;box-shadow:0 12px 40px rgba(20,30,50,.24);width:292px;max-width:calc(100vw - 24px);
+         overflow:hidden;display:none}
+  .panel.show{display:block}
+  .panel .ph{padding:12px 14px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .panel .ph .dt{font-weight:800;font-size:14px;text-transform:capitalize}
+  .panel .ph .wd{font-size:11.5px;color:var(--muted);text-transform:capitalize}
+  .panel .pclose{background:transparent;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--muted);padding:0 2px}
+  .panel .pbody{padding:8px 10px;max-height:46vh;overflow:auto}
+  .panel .info{font-size:11.5px;color:#41506a;padding:5px 8px;border-radius:7px;background:#f4f6f9;margin:2px 2px 6px}
+  .panel .info.vak{background:var(--overlap-soft);color:#8a5f00}
+  .panel .info.velo{background:var(--velovrij-soft);color:#0a6b60}
+  .aitem{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:8px}
+  .aitem:hover{background:#f4f6f9}
+  .aitem .adot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .aitem .atxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .aitem .atxt .an{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .aitem .atxt .am{display:block;font-size:11px;color:var(--muted)}
+  .aitem .iconbtn{background:transparent;border:none;cursor:pointer;font-size:14px;padding:3px 5px;border-radius:6px;color:var(--muted)}
+  .aitem .iconbtn:hover{background:#e6eaf0;color:var(--ink)}
+  .aitem.confirm{background:#fbeaea}
+  .aitem .cf{font-size:11.5px;color:#b91c1c;flex:1}
+  .panel .pfoot{padding:8px 10px 12px;border-top:1px solid var(--line)}
+  .panel .addbtn{width:100%;justify-content:center}
+  .empty{font-size:12px;color:var(--muted);padding:10px 8px;text-align:center}
+
+  /* ---- modal form ---- */
+  .modal-bg{position:fixed;inset:0;background:rgba(18,24,34,.5);z-index:120;display:none;align-items:center;justify-content:center;padding:16px}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--card);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:430px;max-width:100%;
+         max-height:calc(100vh - 32px);overflow:auto}
+  .modal h3{margin:0;padding:16px 18px;font-size:16px;border-bottom:1px solid var(--line)}
+  .modal form{padding:14px 18px 4px}
+  .fld{margin-bottom:12px}
+  .fld label{display:block;font-size:12px;font-weight:600;color:#41506a;margin-bottom:4px}
+  .fld input,.fld select{width:100%;font:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--line);
+         border-radius:8px;background:#fff;color:var(--ink)}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--wtsdn);box-shadow:0 0 0 3px rgba(37,99,168,.15)}
+  .frow{display:flex;gap:10px}.frow .fld{flex:1}
+  .fld.disabled{opacity:.4;pointer-events:none}
+  .hinttext{font-size:11px;color:var(--muted);margin:-6px 0 12px}
+  .modal .mfoot{display:flex;gap:8px;align-items:center;padding:12px 18px 18px}
+  .modal .mfoot .sp{flex:1}
+  .err{color:#b91c1c;font-size:12px;margin:0 18px 6px;display:none}
+  .err.show{display:block}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1c2430;color:#fff;
+         padding:10px 16px;border-radius:10px;font-size:13px;box-shadow:0 8px 26px rgba(0,0,0,.3);z-index:200;opacity:0;
+         transition:opacity .2s,transform .2s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+  td.day{cursor:pointer}
+  td.day:hover .daynum{text-decoration:underline;text-decoration-color:#aab2be}
+
   @media (max-width:1024px){.grid{grid-template-columns:repeat(3,1fr)}}
   @media (max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.wrap{padding:18px 12px 40px}}
   @media (max-width:480px){.grid{grid-template-columns:1fr}}
@@ -152,6 +238,7 @@
     .agenda{break-before:page}
     .mgroup{break-inside:avoid}
     .tip{display:none}
+    .toolbar,.panel,.modal-bg,.toast{display:none!important}
     @page{size:A3 landscape;margin:12mm}
   }
 </style>
@@ -178,6 +265,22 @@
     <span class="khint">↑ klik om aan/uit te zetten</span>
   </div>
 
+  <div class="toolbar">
+    <button class="btn primary" id="btn-add">＋ Nieuwe activiteit</button>
+    <div class="dropdown" id="dd-export">
+      <button class="btn" id="btn-export">⤓ Exporteren ▾</button>
+      <div class="menu">
+        <button data-exp="ics"><span>📅 iCalendar (.ics)</span><small>Google Agenda, Apple Agenda, Outlook</small></button>
+        <button data-exp="csv"><span>📊 CSV-bestand</span><small>Importeren in Google Agenda / Outlook</small></button>
+        <div class="sep"></div>
+        <button data-exp="html"><span>💾 Bijgewerkte webpagina (.html)</span><small>Mét je wijzigingen — voor GitHub</small></button>
+      </div>
+    </div>
+    <span class="sp"></span>
+    <span class="saved" id="savedhint">Wijzigingen worden in deze browser bewaard</span>
+    <button class="btn ghost" id="btn-reset" title="Alles terug naar de originele planning">↺ Herstel standaard</button>
+  </div>
+
   <div class="grid" id="grid"></div>
 
   <div class="note" id="ovlnote"></div>
@@ -195,37 +298,98 @@
 </div>
 
 <div class="tip" id="tip"></div>
+<div class="panel" id="daypanel"></div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="modal-title">Nieuwe activiteit</h3>
+    <div class="err" id="form-err"></div>
+    <form id="act-form">
+      <div class="fld"><label>Titel</label><input name="title" type="text" placeholder="bijv. Examen BB voorjaar" autocomplete="off"></div>
+      <div class="fld"><label>Categorie</label>
+        <select name="soort">
+          <option value="wtsdn">WTSDN</option>
+          <option value="velo">VELO</option>
+          <option value="extern">Extern event</option>
+          <option value="feest">Feestdag</option>
+        </select>
+      </div>
+      <div class="frow">
+        <div class="fld"><label>Startdatum</label><input name="start" type="date"></div>
+        <div class="fld"><label>Einddatum <span style="font-weight:400;color:#8b95a3">(optioneel)</span></label><input name="end" type="date"></div>
+      </div>
+      <div class="frow" id="time-fields">
+        <div class="fld"><label>Begintijd</label><input name="t1" type="time"></div>
+        <div class="fld"><label>Eindtijd</label><input name="t2" type="time"></div>
+      </div>
+      <div class="hinttext">Vul een einddatum in voor een meerdaags event — de tijden vervallen dan.</div>
+      <div class="fld"><label>Locatie</label><input name="loc" type="text" placeholder="bijv. Hal 2" autocomplete="off"></div>
+      <div class="mfoot">
+        <button type="button" class="btn danger" id="btn-del" style="display:none">Verwijderen</button>
+        <span class="sp"></span>
+        <button type="button" class="btn ghost" id="btn-cancel">Annuleren</button>
+        <button type="submit" class="btn primary">Opslaan</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="act-data">
+{
+ "rev": 1,
+ "act": [
+  {"t":"1e Dan training","soort":"wtsdn","d":[2027,3,13],"tijd":"10.30–14.30","loc":"Hal 2"},
+  {"t":"Pretest BB voorjaar","soort":"wtsdn","d":[2027,3,13],"tijd":"15.00–18.00","loc":"Dojang"},
+  {"t":"Examen BB voorjaar","soort":"wtsdn","d":[2027,4,3],"tijd":"13.00–16.30","loc":"Hal 2"},
+  {"t":"Gup examens","soort":"velo","d":[2027,4,18],"tijd":"08.45–16.30","loc":"Hal 2"},
+  {"t":"Regio24 BB training","soort":"wtsdn","d":[2027,5,14],"tijd":"19.30–21.30","loc":"Hal 2"},
+  {"t":"Regio24 toernooi","soort":"wtsdn","d":[2027,5,15],"tijd":"08.00–18.00","loc":"Hal 1"},
+  {"t":"Ki Kong","soort":"wtsdn","d":[2027,5,16],"tijd":"10.00–12.00","loc":"Dojang"},
+  {"t":"TSD Training Gup + BB","soort":"wtsdn","d":[2027,5,16],"tijd":"12.30–14.30","loc":"Hal 2"},
+  {"t":"2e Dan training + scheidsrechter","soort":"wtsdn","d":[2027,6,6],"tijd":"09.30–13.00","loc":"Hal 2"},
+  {"t":"Wapen- Hyungdag","soort":"wtsdn","d":[2027,6,6],"tijd":"13.30–16.00","loc":"Hal 2"},
+  {"t":"Eindejaarstraining + BBQ","soort":"velo","d":[2027,7,9],"tijd":"18.00–19.30","loc":"Hal 2"},
+  {"t":"Aruba toernooi","soort":"extern","start":[2027,7,7],"end":[2027,7,11],"loc":"Aruba"},
+  {"t":"EU Master Clinic","soort":"extern","start":[2027,8,24],"end":[2027,8,27]},
+  {"t":"EK Nottingham","soort":"extern","d":[2027,8,28],"loc":"Nottingham (UK)"},
+  {"t":"3e Dan training","soort":"wtsdn","d":[2027,9,18],"tijd":"09.30–13.00","loc":"Hal 2"},
+  {"t":"Pretest BB najaar","soort":"wtsdn","d":[2027,9,18],"tijd":"14.00–17.00","loc":"Dojang"},
+  {"t":"Toernooi NK","soort":"wtsdn","d":[2027,9,25],"tijd":"09.30–17.30","loc":"Hal 2"},
+  {"t":"Examen BB najaar","soort":"wtsdn","d":[2027,10,9],"tijd":"13.00–16.30","loc":"Hal 2"},
+  {"t":"Gup examens","soort":"velo","d":[2027,11,7],"tijd":"08.45–16.30","loc":"Hal 2"},
+  {"t":"4e Dan training","soort":"wtsdn","d":[2027,12,11],"tijd":"10.00–13.00","loc":"Hal 1"},
+  {"t":"Kersttraining","soort":"wtsdn","d":[2027,12,11],"tijd":"14.00–17.00","loc":"Hal 1"},
+  {"t":"BB-leden activiteit","soort":"wtsdn","d":[2027,12,11],"tijd":"18.00–22.00","loc":"lage bar?"}
+ ]
+}
+</script>
 
 <script>
 const MONTHS=["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
 const WD=["ma","di","wo","do","vr","za","zo"];
 
-// ---- Activities (Soort: wtsdn|velo|extern|feest) ----
-// date: [Y,M,D] (M 1-12). Multi-day events use start/end.
-const ACT=[
- {d:[2027,3,13],t:"1e Dan training",soort:"wtsdn",tijd:"10.30–14.30",loc:"Hal 2"},
- {d:[2027,3,13],t:"Pretest BB voorjaar",soort:"wtsdn",tijd:"15.00–18.00",loc:"Dojang"},
- {d:[2027,4,3],t:"Examen BB voorjaar",soort:"wtsdn",tijd:"13.00–16.30",loc:"Hal 2"},
- {d:[2027,4,18],t:"Gup examens",soort:"velo",tijd:"08.45–16.30",loc:"Hal 2"},
- {d:[2027,5,14],t:"Regio24 BB training",soort:"wtsdn",tijd:"19.30–21.30",loc:"Hal 2"},
- {d:[2027,5,15],t:"Regio24 toernooi",soort:"wtsdn",tijd:"08.00–18.00",loc:"Hal 1"},
- {d:[2027,5,16],t:"Ki Kong",soort:"wtsdn",tijd:"10.00–12.00",loc:"Dojang"},
- {d:[2027,5,16],t:"TSD Training Gup + BB",soort:"wtsdn",tijd:"12.30–14.30",loc:"Hal 2"},
- {d:[2027,6,6],t:"2e Dan training + scheidsrechter",soort:"wtsdn",tijd:"09.30–13.00",loc:"Hal 2"},
- {d:[2027,6,6],t:"Wapen- Hyungdag",soort:"wtsdn",tijd:"13.30–16.00",loc:"Hal 2"},
- {d:[2027,7,9],t:"Eindejaarstraining + BBQ",soort:"velo",tijd:"18.00–19.30",loc:"Hal 2"},
- {start:[2027,7,7],end:[2027,7,11],t:"Aruba toernooi",soort:"extern",loc:"Aruba"},
- {start:[2027,8,24],end:[2027,8,27],t:"EU Master Clinic",soort:"extern"},
- {d:[2027,8,28],t:"EK Nottingham",soort:"extern",loc:"Nottingham (UK)"},
- {d:[2027,9,18],t:"3e Dan training",soort:"wtsdn",tijd:"09.30–13.00",loc:"Hal 2"},
- {d:[2027,9,18],t:"Pretest BB najaar",soort:"wtsdn",tijd:"14.00–17.00",loc:"Dojang"},
- {d:[2027,9,25],t:"Toernooi NK",soort:"wtsdn",tijd:"09.30–17.30",loc:"Hal 2"},
- {d:[2027,10,9],t:"Examen BB najaar",soort:"wtsdn",tijd:"13.00–16.30",loc:"Hal 2"},
- {d:[2027,11,7],t:"Gup examens",soort:"velo",tijd:"08.45–16.30",loc:"Hal 2"},
- {d:[2027,12,11],t:"4e Dan training",soort:"wtsdn",tijd:"10.00–13.00",loc:"Hal 1"},
- {d:[2027,12,11],t:"Kersttraining",soort:"wtsdn",tijd:"14.00–17.00",loc:"Hal 1"},
- {d:[2027,12,11],t:"BB-leden activiteit",soort:"wtsdn",tijd:"18.00–22.00",loc:"lage bar?"},
-];
+// ---- Activities: loaded from the embedded #act-data block, overridable per browser ----
+const LS_KEY='wtsdn-velo-agenda-2027';
+function fileData(){
+  const j=JSON.parse(document.getElementById('act-data').textContent);
+  j.act.forEach((a,i)=>{ if(a.id==null) a.id=i+1; });
+  return j;
+}
+function loadData(){
+  const fd=fileData();
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(raw){ const s=JSON.parse(raw);
+      if(s && s.rev===fd.rev && Array.isArray(s.act)) return {rev:fd.rev, act:s.act};
+    }
+  }catch(e){}
+  return fd;
+}
+let DATA=loadData();
+let ACT=DATA.act;
+let nextId=Math.max(0,...ACT.map(a=>a.id||0))+1;
+function saveData(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({rev:DATA.rev, act:ACT})); }catch(e){} updateSavedHint(); }
 
 // ---- Holidays. Each has Midden range and Zuid range (may be equal). ----
 // r:[Ymd start,Ymd end] inclusive.
@@ -267,17 +431,20 @@ function holidayStatus(y,m,d){
 function feestStatus(y,m,d){const k=key(y,m,d);for(const f of FEEST){if(inRange(k,f.r))return f.name;}return null;}
 
 // Map activities by day key
-const actByDay={};
-for(const a of ACT){
-  if(a.d){(actByDay[key(...a.d)] ||= []).push(a);}
-  else{ // multiday: attach to each day
-    let [ys,ms,ds]=a.start, ke=key(...a.end);
-    let cur=new Date(ys,ms-1,ds);
-    while(key(cur.getFullYear(),cur.getMonth()+1,cur.getDate())<=ke){
-      (actByDay[key(cur.getFullYear(),cur.getMonth()+1,cur.getDate())] ||= []).push(a);
-      cur.setDate(cur.getDate()+1);
+function computeActByDay(){
+  const map={};
+  for(const a of ACT){
+    if(a.d){(map[key(...a.d)] ||= []).push(a);}
+    else{ // multiday: attach to each day
+      let [ys,ms,ds]=a.start, ke=key(...a.end);
+      let cur=new Date(ys,ms-1,ds);
+      while(key(cur.getFullYear(),cur.getMonth()+1,cur.getDate())<=ke){
+        (map[key(cur.getFullYear(),cur.getMonth()+1,cur.getDate())] ||= []).push(a);
+        cur.setDate(cur.getDate()+1);
+      }
     }
   }
+  return map;
 }
 const soortColor={wtsdn:"var(--wtsdn)",velo:"var(--velo)",extern:"var(--extern)",feest:"var(--feest)"};
 
@@ -293,49 +460,52 @@ function isoWeek(y,mo,da){
 }
 
 // ---- Render 12-month grid ----
-const grid=document.getElementById("grid");
-for(let m=1;m<=12;m++){
-  const mc=document.createElement("div");mc.className="month";
-  const days=new Date(2027,m,0).getDate();
-  const first=(new Date(2027,m-1,1).getDay()+6)%7; // Mon=0
-  const rowMon=new Date(2027,m-1,1-first); // Monday of the first displayed row
-  let html=`<h2>${MONTHS[m-1].charAt(0).toUpperCase()+MONTHS[m-1].slice(1)} <span>2027</span></h2><table><thead><tr><th class="wk">wk</th>`;
-  for(const w of WD) html+=`<th>${w}</th>`;
-  html+=`</tr></thead><tbody><tr><td class="wk">${isoWeek(rowMon.getFullYear(),rowMon.getMonth(),rowMon.getDate())}</td>`;
-  let col=0;
-  for(let i=0;i<first;i++){html+="<td class='pad'></td>";col++;}
-  for(let d=1;d<=days;d++){
-    if(col===7){rowMon.setDate(rowMon.getDate()+7);html+=`</tr><tr><td class="wk">${isoWeek(rowMon.getFullYear(),rowMon.getMonth(),rowMon.getDate())}</td>`;col=0;}
-    const dow=(new Date(2027,m-1,d).getDay()+6)%7;
-    const wknd=dow>=5;
-    const hol=holidayStatus(2027,m,d);
-    const velo=veloStatus(2027,m,d);
-    const acts=actByDay[key(2027,m,d)]||[];
-    let tag="";
-    let classes=[];
-    if(wknd) classes.push("weekend");
-    if(hol){classes.push(hol.cls); tag=hol.tag;}
-    if(velo) classes.push(hol? "velo":"velo-only");
-    if(acts.length) classes.push("hasact");
-    // marker dots (dedupe by soort)
-    let soorten=[...new Set(acts.map(a=>a.soort))];
-    let dots = soorten.map(s=>`<span class="dot d-${s}" style="background:${soortColor[s]}"></span>`).join("");
-    // tooltip payload
-    let tipItems=acts.map(a=>`${a.t}${a.tijd?" · "+a.tijd:""}${a.loc?" · "+a.loc:""}`);
-    if(hol) tipItems.unshift(`🏫 School vrij: ${hol.name} (${hol.scope})`);
-    if(velo) tipItems.unshift(`🥋 VELO vrij — ${velo.name}${velo.note? " ("+velo.note+")":""}`);
-    const tipData = tipItems.length? ` data-tip="${tipItems.join(' ||| ').replace(/"/g,'&quot;')}" data-date="${d} ${MONTHS[m-1]}"`:"";
-    html+=`<td class="${classes.join(' ')}"${tipData}>`
-        +(tag?`<span class="rtag">${tag}</span>`:"")
-        +`<span class="daynum">${d}</span>`
-        +(dots?`<span class="marks">${dots}</span>`:"")
-        +`</td>`;
-    col++;
+function renderCalendar(){
+  const actByDay=computeActByDay();
+  const grid=document.getElementById("grid"); grid.innerHTML="";
+  for(let m=1;m<=12;m++){
+    const mc=document.createElement("div");mc.className="month";
+    const days=new Date(2027,m,0).getDate();
+    const first=(new Date(2027,m-1,1).getDay()+6)%7; // Mon=0
+    const rowMon=new Date(2027,m-1,1-first); // Monday of the first displayed row
+    let html=`<h2>${MONTHS[m-1].charAt(0).toUpperCase()+MONTHS[m-1].slice(1)} <span>2027</span></h2><table><thead><tr><th class="wk">wk</th>`;
+    for(const w of WD) html+=`<th>${w}</th>`;
+    html+=`</tr></thead><tbody><tr><td class="wk">${isoWeek(rowMon.getFullYear(),rowMon.getMonth(),rowMon.getDate())}</td>`;
+    let col=0;
+    for(let i=0;i<first;i++){html+="<td class='pad'></td>";col++;}
+    for(let d=1;d<=days;d++){
+      if(col===7){rowMon.setDate(rowMon.getDate()+7);html+=`</tr><tr><td class="wk">${isoWeek(rowMon.getFullYear(),rowMon.getMonth(),rowMon.getDate())}</td>`;col=0;}
+      const dow=(new Date(2027,m-1,d).getDay()+6)%7;
+      const wknd=dow>=5;
+      const hol=holidayStatus(2027,m,d);
+      const velo=veloStatus(2027,m,d);
+      const acts=actByDay[key(2027,m,d)]||[];
+      let tag="";
+      let classes=["day"];
+      if(wknd) classes.push("weekend");
+      if(hol){classes.push(hol.cls); tag=hol.tag;}
+      if(velo) classes.push(hol? "velo":"velo-only");
+      if(acts.length) classes.push("hasact");
+      // marker dots (dedupe by soort)
+      let soorten=[...new Set(acts.map(a=>a.soort))];
+      let dots = soorten.map(s=>`<span class="dot d-${s}" style="background:${soortColor[s]||'#888'}"></span>`).join("");
+      // tooltip payload
+      let tipItems=acts.map(a=>`${a.t}${a.tijd?" · "+a.tijd:""}${a.loc?" · "+a.loc:""}`);
+      if(hol) tipItems.unshift(`🏫 School vrij: ${hol.name} (${hol.scope})`);
+      if(velo) tipItems.unshift(`🥋 VELO vrij — ${velo.name}${velo.note? " ("+velo.note+")":""}`);
+      const tipData = tipItems.length? ` data-tip="${tipItems.join(' ||| ').replace(/"/g,'&quot;')}"`:"";
+      html+=`<td class="${classes.join(' ')}" data-y="2027" data-m="${m}" data-d="${d}" data-date="${d} ${MONTHS[m-1]}"${tipData}>`
+          +(tag?`<span class="rtag">${tag}</span>`:"")
+          +`<span class="daynum">${d}</span>`
+          +(dots?`<span class="marks">${dots}</span>`:"")
+          +`</td>`;
+      col++;
+    }
+    while(col<7){html+="<td class='pad'></td>";col++;}
+    html+="</tr></tbody></table>";
+    mc.innerHTML=html;
+    grid.appendChild(mc);
   }
-  while(col<7){html+="<td class='pad'></td>";col++;}
-  html+="</tr></tbody></table>";
-  mc.innerHTML=html;
-  grid.appendChild(mc);
 }
 
 // overlap note
@@ -354,48 +524,38 @@ document.querySelectorAll('.lg[data-toggle]').forEach(el=>{
   });
 });
 
-// ---- Tooltip / info box (works with mouse hover on desktop and tap on mobile) ----
+// ---- Hover preview (desktop) + click opens the interactive day panel ----
 const tip=document.getElementById("tip");
 const isMobile=()=>window.matchMedia("(max-width:560px)").matches;
-let pinned=false;
-
 function fillTip(td){
-  const items=td.getAttribute("data-tip").split(" ||| ");
-  tip.innerHTML=`<button class="tclose" aria-label="Sluiten">×</button>`
-    +`<b>${td.getAttribute("data-date")}</b>`
-    +items.map(i=>`<div class="meta">${i}</div>`).join("");
-  tip.querySelector(".tclose").addEventListener("click",e=>{e.stopPropagation();hideTip();});
+  const items=(td.getAttribute("data-tip")||"").split(" ||| ").filter(Boolean);
+  tip.innerHTML=`<b>${td.getAttribute("data-date")}</b>`+items.map(i=>`<div class="meta">${i}</div>`).join("");
 }
-function clampPos(x,y){
+function clampTip(x,y){
   const r=tip.getBoundingClientRect(), pad=8;
   let nx=x+14, ny=y+14;
   if(nx+r.width>window.innerWidth-pad) nx=x-r.width-14;
   if(nx<pad) nx=pad;
-  if(nx+r.width>window.innerWidth-pad) nx=window.innerWidth-r.width-pad;
   if(ny+r.height>window.innerHeight-pad) ny=y-r.height-14;
   if(ny<pad) ny=pad;
   tip.style.left=nx+"px"; tip.style.top=ny+"px";
 }
-function showTip(td,x,y,pin){
-  fillTip(td);
-  tip.classList.toggle("pinned",!!pin);
-  tip.style.opacity="1";
-  tip.style.pointerEvents=pin?"auto":"none";
-  if(isMobile()){ tip.classList.add("sheet"); tip.style.left=""; tip.style.top=""; }
-  else { tip.classList.remove("sheet"); clampPos(x,y); }
-}
-function hideTip(){ tip.style.opacity="0"; tip.style.pointerEvents="none"; tip.classList.remove("pinned","sheet"); pinned=false; }
-
-document.querySelectorAll("td[data-tip]").forEach(td=>{
-  td.addEventListener("mouseenter",()=>{ if(pinned||isMobile())return; const r=td.getBoundingClientRect(); showTip(td,r.left,r.top,false); });
-  td.addEventListener("mousemove",e=>{ if(pinned||isMobile())return; clampPos(e.clientX,e.clientY); });
-  td.addEventListener("mouseleave",()=>{ if(!pinned) hideTip(); });
-  // tap (mobile) or click (desktop) pins the box so it stays open
-  td.addEventListener("click",e=>{ e.stopPropagation(); pinned=true; const r=td.getBoundingClientRect(); showTip(td,r.left,r.bottom,true); });
+function hideTip(){ tip.style.opacity="0"; }
+const gridEl=document.getElementById("grid");
+gridEl.addEventListener("mouseover",e=>{
+  if(isMobile())return;
+  const td=e.target.closest("td.day[data-tip]"); if(!td)return;
+  fillTip(td); tip.classList.remove("sheet"); tip.style.pointerEvents="none"; tip.style.opacity="1";
+  const r=td.getBoundingClientRect(); clampTip(r.left,r.top);
 });
-// tap/click anywhere else closes a pinned box
-document.addEventListener("click",()=>{ if(pinned) hideTip(); });
-window.addEventListener("resize",hideTip);
+gridEl.addEventListener("mousemove",e=>{ if(!isMobile() && tip.style.opacity==="1") clampTip(e.clientX,e.clientY); });
+gridEl.addEventListener("mouseout",e=>{ if(e.target.closest("td.day")) hideTip(); });
+gridEl.addEventListener("click",e=>{
+  const td=e.target.closest("td.day"); if(!td)return;
+  e.stopPropagation(); hideTip();
+  openDayPanel(+td.dataset.y,+td.dataset.m,+td.dataset.d, td);
+});
+window.addEventListener("resize",()=>{ hideTip(); closePanel(); });
 
 // ---- Agenda list (grouped by month, merging activities + holidays chronologically) ----
 function fmtRange(r){
@@ -406,63 +566,342 @@ function fmtRange(r){
 }
 const dayName=(y,m,d)=>["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"][new Date(y,m-1,d).getDay()];
 
-// build entries
-let entries=[];
-for(const a of ACT){
-  const s=a.d||a.start;
-  entries.push({sort:key(...s), day:s, kind:"act", a});
-}
-for(const v of VAK){
-  const s=v.midden[0][0]<=v.zuid[0][0]?v.zuid:v.midden; // earliest start
-  const earliest = key(...v.midden[0])<=key(...v.zuid[0])?v.midden[0]:v.zuid[0];
-  entries.push({sort:key(...earliest), day:earliest, kind:"vak", v});
-}
-for(const f of FEEST){ entries.push({sort:key(...f.r[0]), day:f.r[0], kind:"feest", f}); }
-for(const v of VELO){
-  const anchor = v.r[0][0]<2027 ? [2027,1,1] : v.r[0]; // periodes die in 2026 starten tonen we bij januari 2027
-  entries.push({sort:key(...anchor), day:anchor, kind:"velovrij", v});
-}
-entries.sort((x,y)=>x.sort-y.sort);
-
-const list=document.getElementById("list");
-let curMonth=-1, grp=null;
-const pill={wtsdn:["p-wtsdn","WTSDN"],velo:["p-velo","VELO"],extern:["p-extern","Extern"],feest:["p-feest","Feestdag"]};
-for(const e of entries){
-  const m=e.day[1];
-  if(m!==curMonth){curMonth=m;grp=document.createElement("div");grp.className="mgroup";
-    grp.innerHTML=`<h3>${MONTHS[m-1]} 2027</h3>`;list.appendChild(grp);}
-  if(e.kind==="act"){
-    const a=e.a; const multi=!!a.start;
-    const dateHtml = multi? `${a.start[2]}–${a.end[2]} ${MONTHS[a.start[1]-1].slice(0,3)}` : `${a.d[2]} ${MONTHS[a.d[1]-1].slice(0,3)}`;
-    const sub = multi? "meerdere dagen" : dayName(...a.d);
-    grp.insertAdjacentHTML("beforeend",
-     `<div class="row"><div class="date">${dateHtml}<small>${sub}</small></div>`+
-     `<div class="title"><span class="dot" style="background:${soortColor[a.soort]}"></span>${a.t}`+
-     ` <span class="pill ${pill[a.soort][0]}">${pill[a.soort][1]}</span></div>`+
-     `<div class="loc">${a.tijd?a.tijd+"<br>":""}${a.loc||""}</div></div>`);
-  } else if(e.kind==="vak"){
-    const v=e.v; const same=JSON.stringify(v.midden)===JSON.stringify(v.zuid);
-    let detail = same? `<div class="loc">${fmtRange(v.midden)}</div>`
-      : `<div class="loc" style="text-align:right"><b>Midden:</b> ${fmtRange(v.midden)}<br><b>Zuid:</b> ${fmtRange(v.zuid)}</div>`;
-    grp.insertAdjacentHTML("beforeend",
-     `<div class="row vak"><div class="date">🏖<small>vakantie</small></div>`+
-     `<div class="title">${v.name} <span class="pill p-vak">${same?'Midden & Zuid gelijk':'M ≠ Z'}</span></div>`+
-     detail+`</div>`);
-  } else if(e.kind==="velovrij"){
-    const v=e.v;
-    grp.insertAdjacentHTML("beforeend",
-     `<div class="row velovrij"><div class="date">🥋<small>VELO vrij</small></div>`+
-     `<div class="title">${v.name} <span class="pill p-velovrij">Geen training</span></div>`+
-     `<div class="loc">${fmtRange(v.r)}${v.note? '<br><span style="font-size:11px;color:#0a6b60">'+v.note+'</span>':''}</div></div>`);
-  } else {
-    const f=e.f; const one=key(...f.r[0])===key(...f.r[1]);
-    const dstr = one? `${f.r[0][2]} ${MONTHS[f.r[0][1]-1].slice(0,3)}` : `${f.r[0][2]}–${f.r[1][2]} ${MONTHS[f.r[0][1]-1].slice(0,3)}`;
-    grp.insertAdjacentHTML("beforeend",
-     `<div class="row"><div class="date">${dstr}<small>feestdag</small></div>`+
-     `<div class="title"><span class="dot" style="background:var(--feest)"></span>${f.name}`+
-     ` <span class="pill p-feest">Feestdag</span></div><div class="loc"></div></div>`);
+function renderAgenda(){
+  let entries=[];
+  for(const a of ACT){ const s=a.d||a.start; entries.push({sort:key(...s), day:s, kind:"act", a}); }
+  for(const v of VAK){
+    const earliest = key(...v.midden[0])<=key(...v.zuid[0])?v.midden[0]:v.zuid[0];
+    entries.push({sort:key(...earliest), day:earliest, kind:"vak", v});
+  }
+  for(const f of FEEST){ entries.push({sort:key(...f.r[0]), day:f.r[0], kind:"feest", f}); }
+  for(const v of VELO){
+    const anchor = v.r[0][0]<2027 ? [2027,1,1] : v.r[0];
+    entries.push({sort:key(...anchor), day:anchor, kind:"velovrij", v});
+  }
+  entries.sort((x,y)=>x.sort-y.sort);
+  const list=document.getElementById("list"); list.innerHTML="";
+  let curMonth=-1, grp=null;
+  const pill={wtsdn:["p-wtsdn","WTSDN"],velo:["p-velo","VELO"],extern:["p-extern","Extern"],feest:["p-feest","Feestdag"]};
+  for(const e of entries){
+    const m=e.day[1];
+    if(m!==curMonth){curMonth=m;grp=document.createElement("div");grp.className="mgroup";
+      grp.innerHTML=`<h3>${MONTHS[m-1]} 2027</h3>`;list.appendChild(grp);}
+    if(e.kind==="act"){
+      const a=e.a; const multi=!!a.start;
+      const dateHtml = multi? `${a.start[2]}–${a.end[2]} ${MONTHS[a.start[1]-1].slice(0,3)}` : `${a.d[2]} ${MONTHS[a.d[1]-1].slice(0,3)}`;
+      const sub = multi? "meerdere dagen" : dayName(...a.d);
+      const pl = pill[a.soort]||["p-wtsdn",a.soort];
+      grp.insertAdjacentHTML("beforeend",
+       `<div class="row"><div class="date">${dateHtml}<small>${sub}</small></div>`+
+       `<div class="title"><span class="dot" style="background:${soortColor[a.soort]||'#888'}"></span>${esc(a.t)}`+
+       ` <span class="pill ${pl[0]}">${pl[1]}</span></div>`+
+       `<div class="loc">${a.tijd?a.tijd+"<br>":""}${esc(a.loc||"")}</div></div>`);
+    } else if(e.kind==="vak"){
+      const v=e.v; const same=JSON.stringify(v.midden)===JSON.stringify(v.zuid);
+      let detail = same? `<div class="loc">${fmtRange(v.midden)}</div>`
+        : `<div class="loc" style="text-align:right"><b>Midden:</b> ${fmtRange(v.midden)}<br><b>Zuid:</b> ${fmtRange(v.zuid)}</div>`;
+      grp.insertAdjacentHTML("beforeend",
+       `<div class="row vak"><div class="date">🏖<small>vakantie</small></div>`+
+       `<div class="title">${v.name} <span class="pill p-vak">${same?'Midden & Zuid gelijk':'M ≠ Z'}</span></div>`+
+       detail+`</div>`);
+    } else if(e.kind==="velovrij"){
+      const v=e.v;
+      grp.insertAdjacentHTML("beforeend",
+       `<div class="row velovrij"><div class="date">🥋<small>VELO vrij</small></div>`+
+       `<div class="title">${v.name} <span class="pill p-velovrij">Geen training</span></div>`+
+       `<div class="loc">${fmtRange(v.r)}${v.note? '<br><span style="font-size:11px;color:#0a6b60">'+v.note+'</span>':''}</div></div>`);
+    } else {
+      const f=e.f; const one=key(...f.r[0])===key(...f.r[1]);
+      const dstr = one? `${f.r[0][2]} ${MONTHS[f.r[0][1]-1].slice(0,3)}` : `${f.r[0][2]}–${f.r[1][2]} ${MONTHS[f.r[0][1]-1].slice(0,3)}`;
+      grp.insertAdjacentHTML("beforeend",
+       `<div class="row"><div class="date">${dstr}<small>feestdag</small></div>`+
+       `<div class="title"><span class="dot" style="background:var(--feest)"></span>${f.name}`+
+       ` <span class="pill p-feest">Feestdag</span></div><div class="loc"></div></div>`);
+    }
   }
 }
+
+function renderAll(){ renderCalendar(); renderAgenda(); }
+
+/* ===================== small helpers ===================== */
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function pad(n){ return String(n).padStart(2,"0"); }
+function isoDate(a){ return `${a[0]}-${pad(a[1])}-${pad(a[2])}`; }
+function parseISO(s){ const [y,m,d]=s.split("-").map(Number); return [y,m,d]; }
+function toInput(o){ return `${pad(o.h)}:${pad(o.m)}`; }
+function parseTijd(tijd){
+  if(!tijd) return null;
+  const parts=String(tijd).split(/[–-]/);
+  const pp=s=>{ s=s.trim().replace(":","."); const [h,m]=s.split("."); return {h:+h,m:+(m||0)}; };
+  return {s:pp(parts[0]), e: parts[1]?pp(parts[1]):null};
+}
+function byId(id){ return ACT.find(a=>a.id===id); }
+function cellFor(y,m,d){ return document.querySelector(`#grid td.day[data-y="${y}"][data-m="${m}"][data-d="${d}"]`); }
+let toastT=null;
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),2400); }
+function updateSavedHint(){
+  const el=document.getElementById("savedhint"); if(!el) return;
+  let has=false; try{ has=!!localStorage.getItem(LS_KEY); }catch(e){}
+  el.textContent = has? "✓ Wijzigingen bewaard in deze browser" : "Wijzigingen worden in deze browser bewaard";
+}
+
+/* ===================== data mutations ===================== */
+function deleteAct(id){
+  const i=ACT.findIndex(a=>a.id===id);
+  if(i>=0){ ACT.splice(i,1); saveData(); renderAll(); toast("Activiteit verwijderd"); }
+}
+function resetDefaults(){
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  DATA=fileData(); ACT=DATA.act; nextId=Math.max(0,...ACT.map(a=>a.id||0))+1;
+  renderAll(); updateSavedHint(); toast("Standaardplanning hersteld");
+}
+
+/* ===================== interactive day panel ===================== */
+const panel=document.getElementById("daypanel");
+let panelDay=null;
+function findActsOn(y,m,d){
+  const kk=key(y,m,d), out=[];
+  for(const a of ACT){
+    if(a.d){ if(key(...a.d)===kk) out.push(a); }
+    else{ if(kk>=key(...a.start)&&kk<=key(...a.end)) out.push(a); }
+  }
+  return out;
+}
+function openDayPanel(y,m,d,cell){
+  panelDay={y,m,d};
+  const acts=findActsOn(y,m,d);
+  const hol=holidayStatus(y,m,d), velo=veloStatus(y,m,d);
+  let body="";
+  if(velo) body+=`<div class="info velo">🥋 VELO vrij — ${esc(velo.name)}${velo.note?" ("+esc(velo.note)+")":""}</div>`;
+  if(hol) body+=`<div class="info vak">🏫 School vrij: ${esc(hol.name)} (${esc(hol.scope)})</div>`;
+  if(acts.length){
+    body+=acts.map(a=>{
+      const multi=!!a.start;
+      let meta = multi ? "meerdere dagen"+(a.loc?" · "+a.loc:"")
+                       : [a.tijd,a.loc].filter(Boolean).join(" · ");
+      if(!meta) meta="geen tijd opgegeven";
+      return `<div class="aitem" data-id="${a.id}">`
+        +`<span class="adot" style="background:${soortColor[a.soort]||'#888'}"></span>`
+        +`<span class="atxt"><span class="an">${esc(a.t)}</span><span class="am">${esc(meta)}</span></span>`
+        +`<button class="iconbtn act-edit" title="Bewerken">✏️</button>`
+        +`<button class="iconbtn act-del" title="Verwijderen">🗑️</button>`
+        +`</div>`;
+    }).join("");
+  } else if(!hol && !velo){
+    body+=`<div class="empty">Nog geen activiteit op deze dag.</div>`;
+  }
+  panel.innerHTML=`<div class="ph"><div><div class="dt">${d} ${MONTHS[m-1]} ${y}</div>`
+    +`<div class="wd">${dayName(y,m,d)}</div></div><button class="pclose" title="Sluiten">×</button></div>`
+    +`<div class="pbody">${body}</div>`
+    +`<div class="pfoot"><button class="btn primary addbtn" id="panel-add">＋ Activiteit toevoegen</button></div>`;
+  panel.classList.add("show");
+  positionPanel(cell);
+}
+function positionPanel(cell){
+  if(isMobile() || !cell){ panel.style.left=""; panel.style.top=""; return; }
+  const r=cell.getBoundingClientRect(), pr=panel.getBoundingClientRect(), pad=10;
+  let x=r.right+8, y=r.top;
+  if(x+pr.width>window.innerWidth-pad) x=r.left-pr.width-8;
+  if(x<pad) x=pad;
+  if(y+pr.height>window.innerHeight-pad) y=window.innerHeight-pr.height-pad;
+  if(y<pad) y=pad;
+  panel.style.left=x+"px"; panel.style.top=y+"px";
+}
+function closePanel(){ panel.classList.remove("show"); panelDay=null; }
+panel.addEventListener("click",e=>{
+  e.stopPropagation();
+  const item=e.target.closest(".aitem");
+  if(e.target.closest(".pclose")){ closePanel(); return; }
+  if(e.target.id==="panel-add"){ const p=panelDay; closePanel(); openModal(null,{y:p.y,m:p.m,d:p.d}); return; }
+  if(e.target.closest(".do-del") && item){ const p=panelDay; deleteAct(+item.dataset.id); openDayPanel(p.y,p.m,p.d, cellFor(p.y,p.m,p.d)); return; }
+  if(e.target.closest(".no-del") && item){ const p=panelDay; openDayPanel(p.y,p.m,p.d, cellFor(p.y,p.m,p.d)); return; }
+  if(e.target.closest(".act-del") && item){
+    item.classList.add("confirm");
+    item.innerHTML=`<span class="cf">Verwijderen?</span>`
+      +`<button class="iconbtn do-del" title="Ja, verwijderen">✅</button>`
+      +`<button class="iconbtn no-del" title="Annuleren">✖️</button>`;
+    return;
+  }
+  if(e.target.closest(".act-edit") && item){ const a=byId(+item.dataset.id); closePanel(); openModal(a,null); return; }
+});
+
+/* ===================== add / edit modal ===================== */
+const bg=document.getElementById("modal-bg");
+const form=document.getElementById("act-form");
+let editId=null, delArmed=false;
+function openModal(act, preset){
+  editId = act? act.id : null; delArmed=false;
+  document.getElementById("modal-title").textContent = act? "Activiteit bewerken" : "Nieuwe activiteit";
+  const f=form.elements;
+  f.title.value = act? act.t : "";
+  f.soort.value = act? act.soort : "wtsdn";
+  let sd, ed, t1="", t2="";
+  if(act){
+    if(act.d){ sd=act.d; ed=act.d; const p=parseTijd(act.tijd); if(p){ t1=toInput(p.s); t2=p.e?toInput(p.e):""; } }
+    else{ sd=act.start; ed=act.end; }
+  } else { const pd=preset||{}; sd=[pd.y||2027,pd.m||1,pd.d||1]; ed=sd; }
+  f.start.value=isoDate(sd);
+  f.end.value = (ed && key(...ed)!==key(...sd))? isoDate(ed) : "";
+  f.t1.value=t1; f.t2.value=t2; f.loc.value = act? (act.loc||"") : "";
+  const db=document.getElementById("btn-del"); db.style.display = act? "" : "none"; db.textContent="Verwijderen";
+  hideErr(); syncMulti();
+  bg.classList.add("show");
+  setTimeout(()=>f.title.focus(),40);
+}
+function closeModal(){ bg.classList.remove("show"); editId=null; delArmed=false; }
+function syncMulti(){
+  const f=form.elements;
+  const multi = f.end.value && f.start.value && f.end.value>f.start.value;
+  document.getElementById("time-fields").classList.toggle("disabled", !!multi);
+}
+function showErr(m){ const el=document.getElementById("form-err"); el.textContent=m; el.classList.add("show"); return false; }
+function hideErr(){ document.getElementById("form-err").classList.remove("show"); }
+function submitForm(e){
+  e.preventDefault();
+  const f=form.elements;
+  const t=f.title.value.trim();
+  if(!t) return showErr("Geef een titel op.");
+  if(!f.start.value) return showErr("Kies een startdatum.");
+  const sd=parseISO(f.start.value);
+  let ed = f.end.value? parseISO(f.end.value): sd;
+  if(key(...ed)<key(...sd)) return showErr("De einddatum ligt vóór de startdatum.");
+  const soort=f.soort.value, loc=f.loc.value.trim();
+  const multi = key(...ed)>key(...sd);
+  const wasEdit=!!editId;
+  const id = editId || nextId++;
+  let obj;
+  if(multi){ obj={id, t, soort, start:sd, end:ed}; if(loc) obj.loc=loc; }
+  else{
+    let tijd="";
+    const a1=f.t1.value, a2=f.t2.value;
+    if(a1&&a2) tijd=`${a1.replace(":",".")}–${a2.replace(":",".")}`;
+    else if(a1) tijd=a1.replace(":",".");
+    obj={id, t, soort, d:sd, tijd}; if(loc) obj.loc=loc;
+  }
+  if(wasEdit){ const i=ACT.findIndex(a=>a.id===id); if(i>=0) ACT[i]=obj; else ACT.push(obj); }
+  else ACT.push(obj);
+  saveData(); renderAll(); closeModal();
+  toast(wasEdit? "Activiteit bijgewerkt" : "Activiteit toegevoegd");
+}
+function onDelBtn(){
+  if(!editId) return;
+  if(!delArmed){ delArmed=true; document.getElementById("btn-del").textContent="Klik nogmaals om te verwijderen"; return; }
+  const id=editId; closeModal(); deleteAct(id);
+}
+
+/* ===================== export ===================== */
+const CATLABEL={wtsdn:"WTSDN",velo:"VELO",extern:"Extern event",feest:"Feestdag"};
+function icsEsc(s){ return String(s||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n"); }
+function buildICS(){
+  const now=new Date();
+  const stamp=`${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+  const dstr=a=>`${a[0]}${pad(a[1])}${pad(a[2])}`;
+  const addDay=a=>{ const d=new Date(a[0],a[1]-1,a[2]+1); return [d.getFullYear(),d.getMonth()+1,d.getDate()]; };
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//WTSDN-VELO//Jaaragenda 2027//NL","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:WTSDN/VELO Jaaragenda 2027"];
+  for(const a of ACT){
+    const cat=CATLABEL[a.soort]||a.soort;
+    L.push("BEGIN:VEVENT");
+    L.push(`UID:wtsdn-velo-${a.id}@jaaragenda-2027`);
+    L.push(`DTSTAMP:${stamp}`);
+    if(a.start){
+      L.push(`DTSTART;VALUE=DATE:${dstr(a.start)}`);
+      L.push(`DTEND;VALUE=DATE:${dstr(addDay(a.end))}`);
+    } else {
+      const p=parseTijd(a.tijd);
+      if(p && p.e){
+        L.push(`DTSTART:${dstr(a.d)}T${pad(p.s.h)}${pad(p.s.m)}00`);
+        L.push(`DTEND:${dstr(a.d)}T${pad(p.e.h)}${pad(p.e.m)}00`);
+      } else if(p){
+        L.push(`DTSTART:${dstr(a.d)}T${pad(p.s.h)}${pad(p.s.m)}00`);
+        L.push(`DTEND:${dstr(a.d)}T${pad((p.s.h+1)%24)}${pad(p.s.m)}00`);
+      } else {
+        L.push(`DTSTART;VALUE=DATE:${dstr(a.d)}`);
+        L.push(`DTEND;VALUE=DATE:${dstr(addDay(a.d))}`);
+      }
+    }
+    L.push(`SUMMARY:${icsEsc(a.t)}`);
+    L.push(`CATEGORIES:${icsEsc(cat)}`);
+    if(a.loc) L.push(`LOCATION:${icsEsc(a.loc)}`);
+    L.push(`DESCRIPTION:${icsEsc("Categorie: "+cat)}`);
+    L.push("END:VEVENT");
+  }
+  L.push("END:VCALENDAR");
+  return L.join("\r\n");
+}
+function csvCell(v){ v=String(v==null?"":v); return /[",\n]/.test(v)? '"'+v.replace(/"/g,'""')+'"' : v; }
+function buildCSV(){
+  const md=a=>`${pad(a[1])}/${pad(a[2])}/${a[0]}`;
+  const t12=o=>{ let ap=o.h<12?"AM":"PM", hh=o.h%12; if(hh===0)hh=12; return `${hh}:${pad(o.m)} ${ap}`; };
+  const rows=[["Subject","Start Date","Start Time","End Date","End Time","All Day Event","Description","Location"]];
+  for(const a of ACT){
+    const cat=CATLABEL[a.soort]||a.soort;
+    let stime="",etime="",allday="True",sdate,edate;
+    if(a.start){ sdate=md(a.start); edate=md(a.end); }
+    else{
+      sdate=md(a.d); edate=md(a.d);
+      const p=parseTijd(a.tijd);
+      if(p && p.e){ stime=t12(p.s); etime=t12(p.e); allday="False"; }
+      else if(p){ stime=t12(p.s); etime=t12({h:(p.s.h+1)%24,m:p.s.m}); allday="False"; }
+    }
+    rows.push([a.t,sdate,stime,edate,etime,allday,"Categorie: "+cat,a.loc||""]);
+  }
+  return rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+}
+function download(name,text,mime){
+  try{
+    const blob=new Blob([text],{type:mime});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },150);
+    toast("Bestand gedownload: "+name);
+  }catch(err){ toast("Downloaden lukt hier niet — open het HTML-bestand rechtstreeks in je browser."); }
+}
+function downloadHTML(){
+  closePanel(); closeModal();
+  const el=document.getElementById("act-data");
+  const newRev=(DATA.rev||1)+1;
+  el.textContent="\n"+JSON.stringify({rev:newRev, act:ACT}, null, 1)+"\n";
+  const html="<!DOCTYPE html>\n"+document.documentElement.outerHTML;
+  DATA.rev=newRev; saveData();
+  download("index.html", html, "text/html");
+}
+
+/* ===================== wire up controls ===================== */
+document.getElementById("btn-add").addEventListener("click",()=>openModal(null,{y:2027,m:1,d:1}));
+document.getElementById("btn-cancel").addEventListener("click",closeModal);
+document.getElementById("btn-del").addEventListener("click",onDelBtn);
+form.addEventListener("submit",submitForm);
+form.elements.start.addEventListener("input",syncMulti);
+form.elements.end.addEventListener("input",syncMulti);
+bg.addEventListener("click",e=>{ if(e.target===bg) closeModal(); });
+
+const dd=document.getElementById("dd-export");
+document.getElementById("btn-export").addEventListener("click",e=>{ e.stopPropagation(); dd.classList.toggle("open"); });
+dd.querySelectorAll(".menu button").forEach(b=>b.addEventListener("click",()=>{
+  dd.classList.remove("open");
+  const k=b.dataset.exp;
+  if(k==="ics") download("wtsdn-velo-jaaragenda-2027.ics", buildICS(), "text/calendar;charset=utf-8");
+  else if(k==="csv") download("wtsdn-velo-jaaragenda-2027.csv", buildCSV(), "text/csv;charset=utf-8");
+  else if(k==="html") downloadHTML();
+}));
+
+let resetArmed=false; const rbtn=document.getElementById("btn-reset");
+rbtn.addEventListener("click",()=>{
+  if(!resetArmed){ resetArmed=true; rbtn.textContent="↺ Zeker weten? nogmaals klikken";
+    setTimeout(()=>{ resetArmed=false; rbtn.textContent="↺ Herstel standaard"; },3000); return; }
+  resetArmed=false; rbtn.textContent="↺ Herstel standaard"; resetDefaults();
+});
+
+document.addEventListener("click",e=>{
+  if(!dd.contains(e.target)) dd.classList.remove("open");
+  if(panel.classList.contains("show") && !panel.contains(e.target) && !e.target.closest("td.day")) closePanel();
+});
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); closePanel(); dd.classList.remove("open"); } });
+
+/* ===================== boot ===================== */
+renderAll();
+updateSavedHint();
 </script>
 </body>
 </html>
